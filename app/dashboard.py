@@ -15,7 +15,22 @@ st.set_page_config(page_title="Corporate Risk Dashboard", layout="wide")
 st.title("Corporate Risk & Compliance Dashboard")
 
 df = pd.read_csv("data/mock/events.csv")
+df["event_date"] = pd.to_datetime(df["event_date"])
+
 scores = calculate_company_score(df)
+
+company_options = ["All Companies"] + sorted(df["company"].unique().tolist())
+
+selected_company = st.sidebar.selectbox(
+    "Select a company",
+    company_options
+)
+
+if selected_company != "All Companies":
+    filtered_df = df[df["company"] == selected_company]
+else:
+    filtered_df = df
+
 
 st.subheader("Risk Score Overview")
 
@@ -36,7 +51,10 @@ for i, (company, score) in enumerate(scores.items()):
 
 st.subheader("Events Timeline")
 
-st.dataframe(df.sort_values(by="event_date", ascending=False))
+st.dataframe(
+    filtered_df.sort_values(by="event_date", ascending=False),
+    use_container_width=True
+)
 
 def calculate_category_scores(df):
     result = []
@@ -57,7 +75,7 @@ def calculate_category_scores(df):
 
 st.subheader("Risk Breakdown by Category")
 
-category_df = calculate_category_scores(df)
+category_df = calculate_category_scores(filtered_df)
 
 fig = px.bar(
     category_df,
@@ -70,9 +88,29 @@ fig = px.bar(
 
 st.plotly_chart(fig, use_container_width=True)
 
+st.subheader("Event Volume Over Time")
+
+events_over_time = (
+    filtered_df
+    .groupby("event_date")
+    .size()
+    .reset_index(name="event_count")
+)
+
+fig_events = px.line(
+    events_over_time,
+    x="event_date",
+    y="event_count",
+    markers=True,
+    title="Risk Events Over Time"
+)
+
+st.plotly_chart(fig_events, use_container_width=True)
+
+
 st.subheader("Generated Alerts")
 
-alerts = generate_alerts(scores, df)
+alerts = generate_alerts(scores, filtered_df)
 
 if alerts:
     for alert in alerts:
