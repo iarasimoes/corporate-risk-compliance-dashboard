@@ -1,0 +1,12 @@
+company,event_date,event_type,risk_category,severity,description
+Alpha Retail,2025-01-10,accounting_issue,ACCOUNTING,5,Inconsistency found in financial statements
+Alpha Retail,2025-01-20,auditor_change,ACCOUNTING,4,External auditor replaced unexpectedly
+Alpha Retail,2025-02-05,delayed_financial_report,ACCOUNTING,5,Quarterly report delayed without clear explanation
+
+Vertex Energy,2025-01-15,debt_renegotiation,CREDIT_LIQUIDITY,4,Company renegotiating short-term debt
+Vertex Energy,2025-02-01,liquidity_stress,CREDIT_LIQUIDITY,5,Reports of liquidity pressure from creditors
+Vertex Energy,2025-02-10,stock_drop,MARKET_STRESS,4,Stock dropped more than 20 percent in one week
+
+Nova Environmental,2025-01-05,executive_departure,GOVERNANCE,4,Chief Financial Officer resigned unexpectedly
+Nova Environmental,2025-01-25,investigation,LEGAL_REGULATORY,5,Regulatory investigation announced
+Nova Environmental,2025-02-03,negative_news_spike,REPUTATIONAL,4,Increase in negative media coverage
