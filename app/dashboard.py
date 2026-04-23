@@ -10,12 +10,21 @@ from src.scoring.calculate_scores import calculate_company_score
 import plotly.express as px
 from src.alerts.generate_alerts import generate_alerts
 from src.processing.score_over_time import calculate_score_over_time
+from src.insights.generate_insights import generate_insights
 
 st.set_page_config(page_title="Corporate Risk Dashboard", layout="wide")
 
 st.title("Corporate Risk & Compliance Dashboard")
 
-df = pd.read_csv("data/mock/events.csv")
+events_df = pd.read_csv("data/mock/events.csv")
+
+try:
+    news_df = pd.read_csv("data/mock/news_events.csv")
+    df = pd.concat([events_df, news_df], ignore_index=True)
+except FileNotFoundError:
+    df = events_df
+
+df["event_date"] = pd.to_datetime(df["event_date"], errors="coerce")
 df["event_date"] = pd.to_datetime(df["event_date"])
 
 scores = calculate_company_score(df)
@@ -73,6 +82,13 @@ def calculate_category_scores(df):
         result.append(category_scores)
 
     return pd.concat(result)
+
+st.subheader("Risk Insights")
+
+insights = generate_insights(filtered_df, scores)
+
+for company, text in insights.items():
+    st.info(f"{company}: {text}")
 
 st.subheader("Risk Breakdown by Category")
 
