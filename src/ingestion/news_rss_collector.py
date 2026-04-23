@@ -69,3 +69,20 @@ if __name__ == "__main__":
     final_df.to_csv("data/mock/news_events.csv", index=False, encoding="utf-8-sig")
 
     print("News RSS data saved to data/mock/news_events.csv")
+
+def collect_all_news(companies):
+    all_news = []
+
+    for company in companies:
+        news_df = collect_google_news(company, max_items=10)
+        all_news.append(news_df)
+
+    final_df = pd.concat(all_news, ignore_index=True)
+
+    final_df.to_csv(
+        "data/mock/news_events.csv",
+        index=False,
+        encoding="utf-8-sig"
+    )
+
+    return final_df
