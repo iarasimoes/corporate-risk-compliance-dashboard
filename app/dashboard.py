@@ -9,6 +9,7 @@ import pandas as pd
 from src.scoring.calculate_scores import calculate_company_score
 import plotly.express as px
 from src.alerts.generate_alerts import generate_alerts
+from src.processing.score_over_time import calculate_score_over_time
 
 st.set_page_config(page_title="Corporate Risk Dashboard", layout="wide")
 
@@ -122,3 +123,19 @@ if alerts:
             st.info(f'{alert["company"]}: {alert["message"]}')
 else:
     st.success("No alerts generated.")
+
+
+st.subheader("Risk Score Evolution")
+
+score_timeline = calculate_score_over_time(filtered_df)
+
+fig_score = px.line(
+    score_timeline,
+    x="event_date",
+    y="risk_score",
+    color="company",
+    markers=True,
+    title="Risk Score Evolution Over Time"
+)
+
+st.plotly_chart(fig_score, use_container_width=True)
