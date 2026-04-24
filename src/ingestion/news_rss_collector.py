@@ -6,23 +6,19 @@ from urllib.parse import quote_plus
 
 RISK_KEYWORDS = {
     "ACCOUNTING": ["accounting", "irregularity", "restatement", "financial statements", "audit"],
-    	"CREDIT_LIQUIDITY": [
-    	"debt", "liquidity", "creditor", "covenant", "bankruptcy",
-    	"restructuring", "funding", "capital structure",
-    	"liquidez", "credor", "reestruturação", "captação"
-	],
+    "CREDIT_LIQUIDITY": ["debt", "liquidity", "creditor", "covenant", "bankruptcy",\
+    "restructuring", "funding", "capital structure",\
+    "liquidez", "credor", "reestruturação", "captação"],
     "GOVERNANCE": ["CEO", "CFO", "board", "resignation", "executive"],
     "LEGAL_REGULATORY": ["investigation", "lawsuit", "regulator", "fraud", "probe"],
     "REPUTATIONAL": ["scandal", "controversy", "crisis", "allegation"],
-    "FINANCIAL_SYSTEM_RISK": [
-    	"central bank", "banco central", "fgc", "deposit insurance",
-    	"liquidation", "liquidação", "intervention", "intervenção",
-    	"bank run", "liquidity crisis", "crise de liquidez",
-    	"capital increase", "aumento de capital",
-    	"subordinated debt", "dívida subordinada",
-    	"asset sale", "venda de ativos",
-    	"regulatory approval", "aprovação regulatória"
-        ],
+    "FINANCIAL_SYSTEM_RISK": ["central bank", "banco central", "fgc", "deposit insurance",\
+    "liquidation", "liquidação", "intervention", "intervenção",\
+    "bank run", "liquidity crisis", "crise de liquidez",\
+    "capital increase", "aumento de capital",\
+    "subordinated debt", "dívida subordinada",\
+    "asset sale", "venda de ativos",\
+    "regulatory approval", "aprovação regulatória"],
 }
 
 
@@ -58,11 +54,11 @@ def collect_google_news(company_name: str, max_items: int = 10):
         summary = entry.get("summary", "")
         published = entry.get("published", None)
 
-	if not published and hasattr(entry, "published_parsed"):
-   		published = datetime(*entry.published_parsed[:6]).isoformat()
+        if not published and hasattr(entry, "published_parsed"):
+            published = datetime(*entry.published_parsed[:6]).isoformat()
 
-	if not published:
-    		published = datetime.now().isoformat()
+        if not published:
+            published = datetime.now().isoformat()
 
         text = f"{title} {summary}"
         category = classify_news(text)

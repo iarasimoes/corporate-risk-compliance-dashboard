@@ -258,6 +258,33 @@ if not ranking_df.empty:
 else:
     st.info("No ranking available.")
 
+st.subheader("🔥 Sector Risk Heatmap")
+
+heatmap_df = (
+    filtered_df
+    .groupby(["sector", "risk_category"])["severity"]
+    .sum()
+    .reset_index()
+)
+
+if not heatmap_df.empty:
+    heatmap_pivot = heatmap_df.pivot(
+        index="sector",
+        columns="risk_category",
+        values="severity"
+    ).fillna(0)
+
+    fig_heatmap = px.imshow(
+        heatmap_pivot,
+        text_auto=True,
+        aspect="auto",
+        title="Risk Intensity by Sector and Category"
+    )
+
+    st.plotly_chart(fig_heatmap, use_container_width=True)
+else:
+    st.info("No sector risk data available.")
+
 # =========================
 # INSIGHTS
 # =========================
