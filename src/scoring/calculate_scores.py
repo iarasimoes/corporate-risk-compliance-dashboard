@@ -6,7 +6,8 @@ WEIGHTS = {
     "GOVERNANCE": 1.0,
     "MARKET_STRESS": 0.8,
     "REPUTATIONAL": 0.8,
-    "LEGAL_REGULATORY": 1.1
+    "LEGAL_REGULATORY": 1.1,
+    "FINANCIAL_SYSTEM_RISK": 1.3
 }
 
 def calculate_company_score(df):

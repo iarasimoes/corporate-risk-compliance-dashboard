@@ -31,6 +31,17 @@ def load_data():
         df = events_df
 
     df["event_date"] = pd.to_datetime(df["event_date"], errors="coerce")
+    # preenche valores inválidos com hoje
+    df["event_date"] = df["event_date"].fillna(pd.Timestamp.today())
+    # garante tipo datetime puro
+    df["event_date"] = pd.to_datetime(df["event_date"])
+    df["event_date"] = pd.to_datetime(df["event_date"], errors="coerce")
+    df["event_date"] = df["event_date"].fillna(pd.Timestamp.today())
+    df["event_date"] = pd.to_datetime(df["event_date"])
+
+    # nova coluna para gráficos
+    df["event_day"] = df["event_date"].dt.date
+    df["event_month"] = df["event_date"].dt.to_period("M").astype(str)
     df["severity"] = pd.to_numeric(df["severity"], errors="coerce").fillna(0)
 
     return df
@@ -95,19 +106,81 @@ st.caption("Monitoring public signals of corporate distress and risk escalation"
 
 df = load_data()
 
-company_options = ["All Companies"] + sorted(df["company"].dropna().unique().tolist())
+try:
+    companies_df = pd.read_csv("data/mock/companies.csv")
+    company_list = companies_df["company"].dropna().unique().tolist()
+except FileNotFoundError:
+    company_list = df["company"].dropna().unique().tolist()
+
+# =========================
+# COMPANY MASTER DATA
+# =========================
+
+try:
+    companies_df = pd.read_csv("data/mock/companies.csv")
+except FileNotFoundError:
+    companies_df = pd.DataFrame({
+        "company": df["company"].dropna().unique(),
+        "sector": "Unknown"
+    })
+
+df = df.merge(
+    companies_df[["company", "sector"]],
+    on="company",
+    how="left"
+)
+
+df["sector"] = df["sector"].fillna("Unknown")
+
+
+# =========================
+# SIDEBAR FILTERS
+# =========================
 
 st.sidebar.title("⚙️ Controls")
 
-selected_company = st.sidebar.selectbox(
-    "Select Company",
-    company_options
+sector_options = sorted(df["sector"].dropna().unique().tolist())
+
+selected_sectors = st.sidebar.multiselect(
+    "Select Sector",
+    sector_options,
+    default=sector_options
 )
 
-if selected_company != "All Companies":
-    filtered_df = df[df["company"] == selected_company]
-else:
-    filtered_df = df
+company_options = sorted(
+    df[df["sector"].isin(selected_sectors)]["company"]
+    .dropna()
+    .unique()
+    .tolist()
+)
+
+selected_companies = st.sidebar.multiselect(
+    "Select Companies",
+    company_options,
+    default=company_options
+)
+
+min_date = df["event_date"].min()
+max_date = df["event_date"].max()
+
+selected_date_range = st.sidebar.date_input(
+    "Event Date Range",
+    value=(min_date.date(), max_date.date())
+)
+
+filtered_df = df[
+    (df["sector"].isin(selected_sectors)) &
+    (df["company"].isin(selected_companies))
+]
+
+if len(selected_date_range) == 2:
+    start_date = pd.to_datetime(selected_date_range[0])
+    end_date = pd.to_datetime(selected_date_range[1]) + pd.Timedelta(days=1)
+
+    filtered_df = filtered_df[
+        (filtered_df["event_date"] >= start_date) &
+        (filtered_df["event_date"] < end_date)
+    ]
 
 
 # =========================
@@ -116,7 +189,11 @@ else:
 
 st.sidebar.subheader("Data Controls")
 
-companies = df["company"].dropna().unique().tolist()
+try:
+    companies_df = pd.read_csv("data/mock/companies.csv")
+    companies = companies_df["company"].dropna().unique().tolist()
+except FileNotFoundError:
+    companies = companies_df["company"].dropna().unique().tolist()
 
 if st.sidebar.button("🔄 Update News RSS"):
     with st.spinner("Fetching latest news..."):
@@ -146,6 +223,40 @@ if scores:
 else:
     st.info("No data available for the selected filter.")
 
+st.subheader("🏆 Highest Risk Companies")
+
+ranking_df = (
+    pd.DataFrame([
+        {"company": company, "risk_score": score, "status": get_status(score)}
+        for company, score in scores.items()
+    ])
+    .sort_values("risk_score", ascending=False)
+)
+
+if not ranking_df.empty:
+    fig_ranking = px.bar(
+        ranking_df,
+        x="risk_score",
+        y="company",
+        orientation="h",
+        text="risk_score",
+        title="Companies Ranked by Risk Score"
+    )
+
+    fig_ranking.update_layout(
+        yaxis={"categoryorder": "total ascending"},
+        height=350
+    )
+
+    st.plotly_chart(fig_ranking, use_container_width=True)
+
+    st.dataframe(
+        ranking_df,
+        use_container_width=True,
+        height=250
+    )
+else:
+    st.info("No ranking available.")
 
 # =========================
 # INSIGHTS
@@ -196,21 +307,27 @@ with col2:
     events_over_time = (
         filtered_df
         .dropna(subset=["event_date"])
-        .groupby("event_date")
+        .assign(event_month=lambda x: x["event_date"].dt.to_period("M").dt.to_timestamp())
+        .groupby("event_month")
         .size()
         .reset_index(name="event_count")
     )
 
     if not events_over_time.empty:
         fig_events = px.line(
-            events_over_time,
-            x="event_date",
-            y="event_count",
-            markers=True,
-            title="Risk Events Over Time"
+        events_over_time,
+        x="event_month",
+        y="event_count",
+        markers=True,
+        title="Risk Events Over Time"
+        )
+        fig_events.update_xaxes(
+            tickformat="%b %Y",
+            dtick="M1"
         )
 
         st.plotly_chart(fig_events, use_container_width=True)
+
     else:
         st.info("No event timeline available.")
 
@@ -240,14 +357,32 @@ st.subheader("📈 Risk Score Evolution")
 
 score_timeline = calculate_score_over_time(filtered_df)
 
+score_timeline["event_month"] = (
+    pd.to_datetime(score_timeline["event_date"])
+    .dt.to_period("M")
+    .dt.to_timestamp()
+)
+
+score_timeline_monthly = (
+    score_timeline
+    .sort_values("event_date")
+    .groupby(["company", "event_month"])
+    .tail(1)
+)
+
+
 if not score_timeline.empty:
     fig_score = px.line(
         score_timeline,
-        x="event_date",
+        x="event_month",
         y="risk_score",
         color="company",
         markers=True,
         title="Risk Score Evolution Over Time"
+    )
+    fig_score.update_xaxes(
+        tickformat="%b %Y",
+        dtick="M1"
     )
 
     st.plotly_chart(fig_score, use_container_width=True)
