@@ -24,15 +24,46 @@ RISK_KEYWORDS = {
 
 def classify_news(text: str):
     text_lower = text.lower()
-    matches = []
+
+    matched = []
+    category_scores = {}
 
     for category, keywords in RISK_KEYWORDS.items():
-        for keyword in keywords:
-            if keyword.lower() in text_lower:
-                matches.append(category)
-                break
+        matches = [kw for kw in keywords if kw.lower() in text_lower]
 
-    return matches[0] if matches else "GENERAL"
+        if matches:
+            matched.extend(matches)
+            category_scores[category] = len(matches)
+
+    if not category_scores:
+        return {
+            "risk_category": "GENERAL",
+            "confidence_score": 0.1,
+            "matched_keywords": [],
+            "signal_type": "GENERAL_NEWS"
+        }
+
+    # categoria com mais matches
+    best_category = max(category_scores, key=category_scores.get)
+    total_matches = sum(category_scores.values())
+
+    # confiança simples
+    confidence = min(0.3 + (total_matches * 0.2), 1.0)
+
+    # tipo de sinal
+    if total_matches >= 3:
+        signal_type = "CRITICAL_SIGNAL"
+    elif total_matches == 2:
+        signal_type = "RISK_SIGNAL"
+    else:
+        signal_type = "WEAK_SIGNAL"
+
+    return {
+        "risk_category": best_category,
+        "confidence_score": round(confidence, 2),
+        "matched_keywords": matched[:5],
+        "signal_type": signal_type
+    }
 
 
 def collect_google_news(company_name: str, max_items: int = 10):
@@ -61,14 +92,22 @@ def collect_google_news(company_name: str, max_items: int = 10):
             published = datetime.now().isoformat()
 
         text = f"{title} {summary}"
-        category = classify_news(text)
+        classification = classify_news(text)
+
+        category = classification["risk_category"]
+        confidence = classification["confidence_score"]
+        keywords = classification["matched_keywords"]
+        signal_type = classification["signal_type"]
 
         records.append({
             "company": company_name,
             "event_date": published,
             "event_type": "news_signal",
             "risk_category": category,
-            "severity": 2 if category == "GENERAL" else 3,
+            "severity": 2 if signal_type == "WEAK_SIGNAL" else (3 if signal_type == "RISK_SIGNAL" else 4),
+            "confidence_score": confidence,
+            "matched_keywords": ", ".join(keywords),
+            "signal_type": signal_type,
             "description": title,
             "source_url": entry.get("link", ""),
             "source": "Google News RSS"

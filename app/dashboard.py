@@ -14,6 +14,13 @@ from src.processing.score_over_time import calculate_score_over_time
 from src.insights.generate_insights import generate_insights
 from src.ingestion.news_rss_collector import collect_all_news
 
+from src.dashboard.helpers import (
+    get_status,
+    get_dashboard_summary,
+    calculate_category_scores,
+    calculate_radar_scores,
+    get_top_risk_drivers
+)
 
 st.set_page_config(
     page_title="Corporate Risk Dashboard",
@@ -44,52 +51,25 @@ def load_data():
     df["event_month"] = df["event_date"].dt.to_period("M").astype(str)
     df["severity"] = pd.to_numeric(df["severity"], errors="coerce").fillna(0)
 
+
+    default_columns = {
+        "confidence_score": 0.5,
+        "matched_keywords": "",
+        "signal_type": "MANUAL_EVENT",
+        "source": "Manual/Mock",
+        "source_url": ""
+    }
+
+    for col, default_value in default_columns.items():
+        if col not in df.columns:
+            df[col] = default_value
+
+    df["confidence_score"] = pd.to_numeric(
+        df["confidence_score"],
+        errors="coerce"
+    ).fillna(0.5)
+
     return df
-
-
-def calculate_category_scores(df):
-    if df.empty:
-        return pd.DataFrame(columns=["risk_category", "severity", "company"])
-
-    result = []
-
-    for company in df["company"].unique():
-        company_df = df[df["company"] == company]
-
-        category_scores = (
-            company_df
-            .groupby("risk_category")["severity"]
-            .sum()
-            .reset_index()
-        )
-
-        category_scores["company"] = company
-        result.append(category_scores)
-
-    return pd.concat(result, ignore_index=True)
-
-
-def calculate_radar_scores(df):
-    if df.empty:
-        return pd.DataFrame()
-
-    radar_df = (
-        df.groupby(["company", "risk_category"])["severity"]
-        .sum()
-        .reset_index()
-    )
-
-    return radar_df
-
-def get_status(score):
-    if score < 30:
-        return "🟢 Normal"
-    elif score < 55:
-        return "🟡 Attention"
-    elif score < 75:
-        return "🟠 High Risk"
-    else:
-        return "🔴 Critical"
 
 
 # =========================
@@ -182,6 +162,9 @@ if len(selected_date_range) == 2:
         (filtered_df["event_date"] < end_date)
     ]
 
+if not selected_sectors or not selected_companies:
+    st.warning("Please select at least one sector and one company to display the dashboard.")
+    st.stop()
 
 # =========================
 # SIDEBAR DATA CONTROLS
@@ -208,6 +191,18 @@ if st.sidebar.button("🔄 Update News RSS"):
 
 scores = calculate_company_score(filtered_df)
 
+alerts = generate_alerts(scores, filtered_df)
+summary = get_dashboard_summary(filtered_df, scores, alerts)
+
+st.subheader("📍 Executive Summary")
+
+kpi1, kpi2, kpi3, kpi4 = st.columns(4)
+
+kpi1.metric("Companies Monitored", summary["total_companies"])
+kpi2.metric("Risk Events", summary["total_events"])
+kpi3.metric("Average Risk Score", summary["avg_score"])
+kpi4.metric("Critical Alerts", summary["critical_alerts"])
+
 st.subheader("📌 Key Risk Indicators")
 
 if scores:
@@ -225,15 +220,15 @@ else:
 
 st.subheader("🏆 Highest Risk Companies")
 
-ranking_df = (
-    pd.DataFrame([
-        {"company": company, "risk_score": score, "status": get_status(score)}
-        for company, score in scores.items()
-    ])
-    .sort_values("risk_score", ascending=False)
-)
+if scores:
+    ranking_df = (
+        pd.DataFrame([
+            {"company": company, "risk_score": score, "status": get_status(score)}
+            for company, score in scores.items()
+        ])
+        .sort_values("risk_score", ascending=False)
+    )
 
-if not ranking_df.empty:
     fig_ranking = px.bar(
         ranking_df,
         x="risk_score",
@@ -256,7 +251,31 @@ if not ranking_df.empty:
         height=250
     )
 else:
-    st.info("No ranking available.")
+    st.info("No companies available for the selected filters.")
+
+st.subheader("🎯 Top Risk Drivers")
+
+drivers_df = get_top_risk_drivers(filtered_df)
+
+if not drivers_df.empty:
+    for company in drivers_df["company"].unique():
+        st.markdown(f"### {company}")
+
+        company_drivers = drivers_df[
+            drivers_df["company"] == company
+        ]
+
+        for _, row in company_drivers.iterrows():
+            st.markdown(
+                f"- **{row['risk_category']}** "
+                f"({row['signal_type']}) | "
+                f"Score: {round(row['event_score'], 2)} \n\n"
+                f"{row['description']}"
+            )
+
+        st.divider()
+else:
+    st.info("No risk drivers available.")
 
 st.subheader("🔥 Sector Risk Heatmap")
 
@@ -284,6 +303,34 @@ if not heatmap_df.empty:
     st.plotly_chart(fig_heatmap, use_container_width=True)
 else:
     st.info("No sector risk data available.")
+
+
+def get_top_risk_drivers(df, top_n=3):
+    if df.empty:
+        return pd.DataFrame()
+
+    df = df.copy()
+
+    df["event_score"] = (
+        df["severity"] *
+        df.get("confidence_score", 0.5)
+    )
+
+    drivers = (
+        df
+        .sort_values("event_score", ascending=False)
+        .groupby("company")
+        .head(top_n)
+    )
+
+    return drivers[[
+        "company",
+        "event_date",
+        "risk_category",
+        "signal_type",
+        "event_score",
+        "description"
+    ]]
 
 # =========================
 # INSIGHTS
@@ -400,7 +447,7 @@ score_timeline_monthly = (
 
 if not score_timeline.empty:
     fig_score = px.line(
-        score_timeline,
+        score_timeline_monthly,
         x="event_month",
         y="risk_score",
         color="company",
@@ -422,8 +469,6 @@ else:
 # =========================
 
 st.subheader("🚨 Generated Alerts")
-
-alerts = generate_alerts(scores, filtered_df)
 
 if alerts:
     for alert in alerts:
