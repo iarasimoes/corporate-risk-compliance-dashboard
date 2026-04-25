@@ -31,26 +31,31 @@ st.set_page_config(
 def load_data():
     events_df = pd.read_csv("data/mock/events.csv")
 
+    df = events_df
+
+    news_path = Path("data/mock/news_events.csv")
+
     try:
-        news_df = pd.read_csv("data/mock/news_events.csv")
-        df = pd.concat([events_df, news_df], ignore_index=True)
-    except FileNotFoundError:
-        df = events_df
+        if news_path.exists() and news_path.stat().st_size > 0:
+            news_df = pd.read_csv(news_path)
+
+            if not news_df.empty:
+                df = pd.concat([events_df, news_df], ignore_index=True)
+
+    except (FileNotFoundError, pd.errors.EmptyDataError):
+        pass
+
+    # =========================
+    # CLEAN DATA
+    # =========================
 
     df["event_date"] = pd.to_datetime(df["event_date"], errors="coerce")
-    # preenche valores inválidos com hoje
     df["event_date"] = df["event_date"].fillna(pd.Timestamp.today())
-    # garante tipo datetime puro
-    df["event_date"] = pd.to_datetime(df["event_date"])
-    df["event_date"] = pd.to_datetime(df["event_date"], errors="coerce")
-    df["event_date"] = df["event_date"].fillna(pd.Timestamp.today())
-    df["event_date"] = pd.to_datetime(df["event_date"])
 
-    # nova coluna para gráficos
     df["event_day"] = df["event_date"].dt.date
     df["event_month"] = df["event_date"].dt.to_period("M").astype(str)
-    df["severity"] = pd.to_numeric(df["severity"], errors="coerce").fillna(0)
 
+    df["severity"] = pd.to_numeric(df["severity"], errors="coerce").fillna(0)
 
     default_columns = {
         "confidence_score": 0.5,
@@ -304,33 +309,6 @@ if not heatmap_df.empty:
 else:
     st.info("No sector risk data available.")
 
-
-def get_top_risk_drivers(df, top_n=3):
-    if df.empty:
-        return pd.DataFrame()
-
-    df = df.copy()
-
-    df["event_score"] = (
-        df["severity"] *
-        df.get("confidence_score", 0.5)
-    )
-
-    drivers = (
-        df
-        .sort_values("event_score", ascending=False)
-        .groupby("company")
-        .head(top_n)
-    )
-
-    return drivers[[
-        "company",
-        "event_date",
-        "risk_category",
-        "signal_type",
-        "event_score",
-        "description"
-    ]]
 
 # =========================
 # INSIGHTS

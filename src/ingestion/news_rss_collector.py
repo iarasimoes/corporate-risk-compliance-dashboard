@@ -2,6 +2,8 @@ import feedparser
 import pandas as pd
 from datetime import datetime
 from urllib.parse import quote_plus
+from pathlib import Path
+from datetime import datetime
 
 
 RISK_KEYWORDS = {
@@ -130,19 +132,46 @@ if __name__ == "__main__":
 
     print("News RSS data saved to data/mock/news_events.csv")
 
-def collect_all_news(companies):
+def collect_all_news(companies=None):
+    if companies is None:
+        companies_df = pd.read_csv("data/mock/companies.csv")
+        companies = companies_df["company"].dropna().unique().tolist()
+
     all_news = []
 
     for company in companies:
-        news_df = collect_google_news(company, max_items=10)
-        all_news.append(news_df)
+        news_df = collect_google_news(company, max_items=15)
 
-    final_df = pd.concat(all_news, ignore_index=True)
+        if not news_df.empty:
+            all_news.append(news_df)
 
-    final_df.to_csv(
-        "data/mock/news_events.csv",
-        index=False,
-        encoding="utf-8-sig"
+    if not all_news:
+        return pd.DataFrame()
+
+    new_df = pd.concat(all_news, ignore_index=True)
+
+    new_df["collected_at"] = datetime.now().isoformat()
+
+    history_path = Path("data/mock/news_events.csv")
+    daily_path = Path(
+        f"data/mock/news_events_{datetime.now().strftime('%Y%m%d')}.csv"
     )
+
+    if history_path.exists() and history_path.stat().st_size > 0:
+        try:
+            history_df = pd.read_csv(history_path)
+            final_df = pd.concat([history_df, new_df], ignore_index=True)
+        except pd.errors.EmptyDataError:
+            final_df = new_df
+    else:
+        final_df = new_df
+
+    final_df = final_df.drop_duplicates(
+        subset=["company", "source_url"],
+        keep="last"
+    )
+
+    final_df.to_csv(history_path, index=False, encoding="utf-8-sig")
+    new_df.to_csv(daily_path, index=False, encoding="utf-8-sig")
 
     return final_df
