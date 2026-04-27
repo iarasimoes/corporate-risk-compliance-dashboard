@@ -1,68 +1,89 @@
 # Corporate Risk & Compliance Early Warning Dashboard
 
-A web-based dashboard for monitoring public signals of corporate distress, governance issues, compliance risk, and reputational deterioration using explainable indicators.
+An interactive analytics dashboard designed to monitor public corporate signals that may indicate financial distress, governance failures, regulatory exposure, reputational deterioration, or systemic risk.
+
+Built as a practical portfolio project combining **Data Analytics, Risk Monitoring, Compliance Concepts, Machine Learning, and Local AI (LLM)**.
+
+---
 
 ## Project Overview
 
-This project aims to demonstrate how public data can be transformed into an early-warning monitoring system for corporate risk analysis.
+This project demonstrates how publicly available information can be transformed into an **Early Warning Monitoring System** for companies and sectors.
 
-The dashboard does **not** detect fraud, determine guilt, or replace legal, audit, or investment analysis. Its purpose is to organize public signals into a structured analytical framework that helps identify patterns of risk escalation.
+The objective is **not** to accuse, conclude wrongdoing, or replace financial/legal analysis.
+
+Instead, it organizes weak and strong public signals into a structured analytical model that helps identify patterns of potential risk escalation.
+
+---
 
 ## Why This Project Matters
 
-Corporate crises rarely appear from a single isolated event. They often emerge through a combination of weak signals, such as:
+Corporate crises rarely emerge from a single isolated event.
 
-- accounting inconsistencies;
-- delayed financial reports;
-- debt renegotiation;
-- executive departures;
-- legal or regulatory investigations;
-- negative media spikes;
-- abnormal market volatility;
-- reputational deterioration.
+They often develop through combinations of signals such as:
 
-This project turns those signals into measurable indicators and visual alerts.
+- accounting inconsistencies  
+- delayed reports  
+- debt renegotiation  
+- liquidity pressure  
+- executive departures  
+- regulatory investigations  
+- reputational controversies  
+- systemic financial stress  
+- negative media concentration  
+
+This project transforms those signals into measurable indicators and visual intelligence.
+
+---
 
 ## Main Use Cases
 
-- Risk monitoring
-- Compliance intelligence
-- Governance analysis
-- Reputation tracking
-- Financial distress monitoring
-- Data analytics portfolio demonstration
+- Corporate Risk Monitoring  
+- Compliance Intelligence  
+- Governance Analytics  
+- Reputation Tracking  
+- Financial Distress Monitoring  
+- Banking / Systemic Risk Signals  
+- Executive Dashboarding  
+- Portfolio Demonstration
+
+---
+
+## Current Data Sources
+
+Real public sources are currently used:
+
+- Google News RSS  
+- Public headlines / market news  
+- Company-related public mentions
+
+The historical dataset grows over time through automated collection.
+
+---
 
 ## Risk Dimensions
 
-The dashboard is structured around five main risk dimensions:
+The dashboard classifies events into explainable categories:
 
-### 1. Accounting Risk
-Signals related to financial reporting, inconsistencies, restatements, auditor changes, delayed filings, or accounting-related controversies.
+### Accounting Risk
+Restatements, audit issues, irregularities, reporting concerns.
 
-### 2. Credit & Liquidity Risk
-Signals related to debt pressure, renegotiation, covenant issues, liquidity stress, bankruptcy protection, or severe financial constraints.
+### Credit & Liquidity Risk
+Debt pressure, refinancing stress, bankruptcy, cash constraints.
 
-### 3. Governance Risk
-Signals related to executive departures, board changes, investigations, conflicts of interest, or governance failures.
+### Governance Risk
+Board changes, CEO/CFO exits, conflicts, governance failures.
 
-### 4. Market Stress Risk
-Signals related to abnormal stock price movement, volume spikes, volatility increases, or sudden investor reaction.
+### Legal / Regulatory Risk
+Investigations, lawsuits, regulators, fraud allegations.
 
-### 5. Reputational Risk
-Signals related to negative news concentration, public scrutiny, repeated critical keywords, or media sentiment deterioration.
+### Reputational Risk
+Scandals, controversies, media pressure, negative headlines.
 
-## Risk Score Methodology
+### Financial System Risk
+Central Bank intervention, FGC, liquidity crisis, contagion, solvency concerns.
 
-The project uses an explainable score from 0 to 100.
-
-```text
-Total Risk Score =
-25% Accounting Risk +
-25% Credit & Liquidity Risk +
-20% Governance Risk +
-15% Market Stress Risk +
-15% Reputational Risk
-```
+---
 
 ## Risk Status Classification
 
@@ -73,90 +94,81 @@ Total Risk Score =
 | 55–74 | High Risk |
 | 75–100 | Critical |
 
-## Dashboard Pages
+---
 
-### 1. Overview
-Executive view with monitored companies, current risk score, active alerts, and score evolution.
+## Hybrid Intelligence Engine
 
-### 2. Company Detail
-Detailed company-level analysis with risk dimensions, timeline of events, recent signals, and alert explanation.
+This project combines **3 analytical layers**:
 
-### 3. Alerts
-List of generated alerts with severity, trigger reason, company, and date.
+### 1. Rule-Based Risk Engine
+Keyword taxonomy + sector-specific logic.
 
-### 4. Methodology
-Explanation of the scoring logic, risk taxonomy, limitations, and ethical considerations.
+### 2. Machine Learning
+TF-IDF + Logistic Regression classifier used as a secondary support signal.
 
-## Initial Data Strategy
+### 3. Local AI (Ollama LLM)
+Used for:
 
-The first version uses mock data inspired by common corporate crisis patterns. This allows the project to focus on modeling, scoring, dashboard design, and documentation before connecting to real public data sources.
+- News summarization  
+- Contextual explanation  
+- Explainability support
 
-Example fictional companies:
+---
 
-- Alpha Retail — accounting risk pattern
-- Vertex Energy — credit and liquidity stress pattern
-- Nova Environmental — governance and reputational risk pattern
+## Dashboard Tabs
 
-## Future Data Sources
+### Overview
+Executive KPIs, monitored companies, current risk exposure.
 
-Potential public data sources for future versions:
+### Risk Analysis
+Trends, categories, timeline, score evolution.
 
-- Google News RSS
-- company investor relations pages
-- public regulatory filings
-- market data APIs
-- public corporate announcements
-- financial news portals
+### Alerts
+Generated alerts based on thresholds.
 
-## Planned Features
+### Event Log
+Detailed records of collected events.
 
-### V1
-- mock event dataset;
-- explainable risk taxonomy;
-- risk score calculation;
-- alert generation;
-- Streamlit dashboard;
-- GitHub documentation.
+### AI / ML Audit
+Comparison between:
 
-### V2
-- public news ingestion;
-- market data integration;
-- automated scheduled updates;
-- PostgreSQL storage;
-- deployment on a VPS;
-- portfolio integration.
+- rule-based classification  
+- ML prediction  
+- confidence levels  
+- AI summaries
 
-### V3
-- AI-assisted event classification;
-- news summarization;
-- entity extraction;
-- alert explanation generation;
-- API layer using FastAPI.
+### About Project
+Documentation, architecture and disclaimer.
 
-## Ethical Disclaimer
+---
 
-This project uses public information and simulated data for educational and analytical purposes. It does not accuse any company or individual of wrongdoing and should not be used as legal, audit, investment, or financial advice.
+## Technologies Used
 
-The goal is to demonstrate how data analytics can support structured monitoring of public risk signals.
+### Python
+Core language for ETL, scoring logic, automation and analytics.
 
-## Tech Stack
+### Streamlit
+Rapid web dashboard development.
 
-Initial version:
+### Pandas
+Data modeling, joins, transformations and time-series handling.
 
-- Python
-- Streamlit
-- SQLite or CSV files
-- Plotly
-- GitHub
+### Plotly
+Interactive charts and executive visuals.
 
-Future version:
+### Scikit-learn
+Machine learning classifier for signal categorization.
 
-- FastAPI
-- PostgreSQL
-- Docker
-- Nginx
-- scheduled data pipelines
-- AI-assisted classification
+### Ollama
+Local LLM execution for AI summaries and explanations.
+
+### GitHub
+Version control and portfolio presentation.
+
+### Linux VPS (Contabo)
+Production hosting environment.
+
+---
 
 ## Repository Structure
 
@@ -168,36 +180,18 @@ corporate-risk-compliance-dashboard/
 │
 ├── data/
 │   ├── mock/
+│   ├── cache/
 │   └── processed/
 │
+├── models/
+│   └── signal_classifier.pkl
+│
 ├── src/
+│   ├── ai/
 │   ├── ingestion/
+│   ├── ml/
 │   ├── processing/
-│   ├── scoring/
-│   └── database/
-│
-├── sql/
-│   └── schema.sql
-│
-├── docs/
-│   ├── methodology.md
-│   ├── risk_taxonomy.md
-│   └── limitations.md
+│   └── scoring/
 │
 ├── README.md
-├── requirements.txt
-└── .env.example
-```
-
-## Portfolio Positioning
-
-This project demonstrates:
-
-- data modeling;
-- business-oriented analytics;
-- compliance and governance thinking;
-- risk indicator design;
-- dashboard development;
-- automation potential;
-- responsible use of public data.
-
+└── requirements.txt
