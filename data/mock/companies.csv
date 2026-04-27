@@ -1,21 +1,21 @@
-company,ticker,country,sector
-Americanas SA,AMER3.SA,Brazil,Retail
-Ambipar,AMBP3.SA,Brazil,Environmental Services
-Banco Master,,Brazil,Banking
-BRB Banco de Brasília,BSLI3.SA,Brazil,Banking
-Nubank,NU,Brazil,Fintech
-Banco Inter,INBR32.SA,Brazil,Fintech
-PagBank,PAGS,Brazil,Payments
-Stone,STNE,Brazil,Payments
-XP Inc,XP,Brazil,Financial Services
-Petrobras,PETR4.SA,Brazil,Energy
-Vale,VALE3.SA,Brazil,Mining
-Braskem,BRKM5.SA,Brazil,Chemicals
-Eletrobras,ELET3.SA,Brazil,Utilities
-Oi,OIBR3.SA,Brazil,Telecom
-TIM Brasil,TIMS3.SA,Brazil,Telecom
-Vivo,VIVT3.SA,Brazil,Telecom
-Hypera,HYPE3.SA,Brazil,Pharmaceuticals
-Raia Drogasil,RADL3.SA,Brazil,Healthcare
-Totvs,TOTS3.SA,Brazil,Technology
-Locaweb,LWSA3.SA,Brazil,Technology
+company,ticker,country,sector,aliases
+Americanas SA,AMER3.SA,Brazil,Retail,"Americanas|Americanas SA|AMER3"
+Ambipar,AMBP3.SA,Brazil,Environmental Services,"Ambipar|AMBP3"
+Banco Master,,Brazil,Banking,"Banco Master|Master bank"
+BRB Banco de Brasília,BSLI3.SA,Brazil,Banking,"BRB|Banco de Brasília|Banco de Brasilia|BSLI3"
+Nubank,NU,Brazil,Fintech,"Nubank|Nu Holdings|NU"
+Banco Inter,INBR32.SA,Brazil,Fintech,"Banco Inter|Inter|INBR32"
+PagBank,PAGS,Brazil,Payments,"PagBank|PagSeguro|PAGS"
+Stone,STNE,Brazil,Payments,"StoneCo|Stone Co|STNE|Stone payments"
+XP Inc,XP,Brazil,Financial Services,"XP Inc|XP Investimentos|XP"
+Petrobras,PETR4.SA,Brazil,Energy,"Petrobras|PETR4|Petroleo Brasileiro"
+Vale,VALE3.SA,Brazil,Mining,"Vale SA|Vale S.A.|VALE3|Vale mining"
+Braskem,BRKM5.SA,Brazil,Chemicals,"Braskem|BRKM5"
+Eletrobras,ELET3.SA,Brazil,Utilities,"Eletrobras|ELET3"
+Oi,OIBR3.SA,Brazil,Telecom,"Oi SA|Oi S.A.|OIBR3|Oi telecom"
+TIM Brasil,TIMS3.SA,Brazil,Telecom,"TIM Brasil|TIMS3|TIM telecom"
+Vivo,VIVT3.SA,Brazil,Telecom,"Vivo telecom|Telefonica Brasil|Telefônica Brasil|VIVT3"
+Hypera,HYPE3.SA,Brazil,Pharmaceuticals,"Hypera|HYPE3"
+Raia Drogasil,RADL3.SA,Brazil,Healthcare,"Raia Drogasil|RADL3|RD Saúde"
+Totvs,TOTS3.SA,Brazil,Technology,"Totvs|TOTS3"
+Locaweb,LWSA3.SA,Brazil,Technology,"Locaweb|LWSA3"
