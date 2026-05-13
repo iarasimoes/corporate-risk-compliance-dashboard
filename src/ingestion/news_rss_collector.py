@@ -89,7 +89,8 @@ def get_query_name(company_name, aliases="", ticker=""):
         "Oi": '"Oi SA" OR OIBR3 OR "Oi telecom"',
         "Banco Inter": '"Banco Inter" OR INBR32',
         "PagBank": '"PagBank" OR PagSeguro OR PAGS',
-        "Nubank": '"Nubank" OR "Nu Holdings" OR NU'
+        "Nubank": '"Nubank" OR "Nu Holdings" OR NU',
+        "XP Inc": '"XP Inc" OR "XP Investimentos" OR "NASDAQ: XP" OR "XP stock"'
     }
 
     if company_name in custom:
@@ -437,6 +438,19 @@ def collect_all_news(companies=None):
 def is_relevant_to_company(company_name, text, company_aliases=None):
     text_lower = text.lower()
     company_lower = company_name.lower()
+    
+    irrelevant_terms_by_company = {
+        "XP Inc": [
+            "windows xp",
+            "microsoft xp",
+            "windows operating system",
+            "windows nostalgia"
+        ]
+    }
+    
+    if company_name in irrelevant_terms_by_company:
+        if any(term in text_lower for term in irrelevant_terms_by_company[company_name]):
+            return False
 
     aliases = []
 

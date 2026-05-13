@@ -3,8 +3,9 @@ import pandas as pd
 
 rules = {
     "Vale": ["port vale", "mclaren vale", "winery"],
-    "Vivo": ["in vivo", "parkinson", "neurons", "biomarker"],
-    "Stone": ["kidney stone", "renal", "urology", "uric acid"]
+    "Vivo": ["in vivo", "parkinson", "neurons", "biomarker", "polo vivo"],
+    "Stone": ["kidney stone", "renal", "urology", "uric acid"],
+    "XP Inc": ["windows xp", "microsoft xp", "windows operating system"]
 }
 
 for file in Path("data/mock").glob("news_events*.csv"):
@@ -20,7 +21,11 @@ for file in Path("data/mock").glob("news_events*.csv"):
         company = str(row.get("company", ""))
         text = str(row.get("description", "")).lower()
 
-        is_irrelevant = company in rules and any(term in text for term in rules[company])
+        is_irrelevant = (
+            company in rules and
+            any(term in text for term in rules[company])
+        )
+
         mask.append(not is_irrelevant)
 
     cleaned_df = df[mask]

@@ -154,7 +154,11 @@ df["sector"] = df["sector"].fillna("Unknown")
 st.subheader("🔎 Filters")
 
 years_available = sorted(
-    df["display_date"].dropna().dt.year.unique().tolist()
+    [
+        year for year in
+        df["display_date"].dropna().dt.year.unique().tolist()
+        if year >= 2026
+    ]
 )
 
 selected_years = st.multiselect(
