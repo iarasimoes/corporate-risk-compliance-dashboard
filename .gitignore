@@ -5,6 +5,8 @@ __pycache__/
 logs/
 *.log
 
+data/mock/news_events*.csv
 data/cache/
+logs/
+.venv/
 models/*.pkl
-.env

@@ -195,3 +195,17 @@ corporate-risk-compliance-dashboard/
 │
 ├── README.md
 └── requirements.txt
+
+## How to Run
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+streamlit run app/dashboard.py
+
+
+## 4. Criar script de setup opcional
+
+```bash
+nano scripts/setup_project.sh
