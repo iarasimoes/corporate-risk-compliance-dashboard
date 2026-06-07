@@ -1,3 +1,8 @@
+![Python](https://img.shields.io/badge/Python-3.11-blue)
+![Streamlit](https://img.shields.io/badge/Streamlit-Dashboard-red)
+![Machine Learning](https://img.shields.io/badge/ML-Scikit--Learn-orange)
+![License](https://img.shields.io/badge/License-MIT-green)
+
 # Corporate Risk & Compliance Early Warning Dashboard
 
 An interactive analytics dashboard designed to monitor public corporate signals that may indicate financial distress, governance failures, regulatory exposure, reputational deterioration, or systemic risk.
@@ -18,7 +23,7 @@ Instead, it organizes weak and strong public signals into a structured analytica
 
 ## Why This Project Matters
 
-Corporate crises rarely emerge from a single isolated event.
+Most corporate crises do not emerge from a single event. They are often preceded by a combination of weak and strong signals that become visible only when analyzed collectively.
 
 They often develop through combinations of signals such as:
 
@@ -51,13 +56,13 @@ This project transforms those signals into measurable indicators and visual inte
 
 ## Current Data Sources
 
-Real public sources are currently used:
+The project currently collects data from publicly available sources:
 
-- Google News RSS  
-- Public headlines / market news  
+- Google News RSS
+- Public market and business news
 - Company-related public mentions
 
-The historical dataset grows over time through automated collection.
+The historical dataset is continuously expanded through automated collection processes.
 
 ---
 
@@ -195,6 +200,7 @@ corporate-risk-compliance-dashboard/
 │
 ├── README.md
 └── requirements.txt
+```
 
 ## How to Run
 
@@ -203,9 +209,18 @@ python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 streamlit run app/dashboard.py
+```
 
-
-## 4. Criar script de setup opcional
+## Optional Setup Script
 
 ```bash
 nano scripts/setup_project.sh
+```
+
+## Disclaimer
+
+This project is intended exclusively for educational, research, and portfolio purposes.
+
+Risk scores and classifications do not constitute financial advice, legal opinions, investment recommendations, or assertions regarding any company.
+
+All information is derived from publicly available sources.
