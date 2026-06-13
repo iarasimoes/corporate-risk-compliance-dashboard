@@ -3,15 +3,17 @@ import pandas as pd
 from datetime import datetime
 from urllib.parse import quote_plus
 from pathlib import Path
-from datetime import datetime
 from src.ai.ollama_client import summarize_news, explain_risk
+from src.ml.predict_signal import predict_signal_type
 import json
 import hashlib
-from src.ml.predict_signal import predict_signal_type
 
 
 RISK_KEYWORDS = {
-    "ACCOUNTING": ["accounting", "irregularity", "restatement", "financial statements", "audit"],
+    "ACCOUNTING": [
+        "accounting", "irregularity", "restatement",
+        "financial statements", "audit"
+    ],
     "CREDIT_LIQUIDITY": [
         "debt", "liquidity", "creditor", "creditors", "covenant",
         "bankruptcy", "restructuring", "funding", "capital structure",
@@ -23,9 +25,15 @@ RISK_KEYWORDS = {
         "dívida", "endividamento", "alavancagem",
         "risco de crédito", "crédito problemático"
     ],
-    "GOVERNANCE": ["CEO", "CFO", "board", "resignation", "executive"],
-    "LEGAL_REGULATORY": ["investigation", "lawsuit", "regulator", "fraud", "probe"],
-    "REPUTATIONAL": ["scandal", "controversy", "crisis", "allegation"],
+    "GOVERNANCE": [
+        "CEO", "CFO", "board", "resignation", "executive"
+    ],
+    "LEGAL_REGULATORY": [
+        "investigation", "lawsuit", "regulator", "fraud", "probe"
+    ],
+    "REPUTATIONAL": [
+        "scandal", "controversy", "crisis", "allegation"
+    ],
     "FINANCIAL_SYSTEM_RISK": [
         "central bank", "banco central", "bacen", "bc",
         "fgc", "fundo garantidor de créditos", "deposit insurance",
@@ -48,48 +56,27 @@ RISK_KEYWORDS = {
         "judicial recovery", "recuperação judicial",
         "bankruptcy protection", "proteção contra falência",
         "special temporary administration", "administração especial temporária",
-        "raet"
+        "raet",
+        "operational error", "erro operacional",
+        "false message", "mensagem indevida",
+        "wrong notification", "mistaken notification",
+        "push notification", "notification"
     ],
 }
 
 
 AI_CACHE_PATH = Path("data/cache/ai_news_cache.json")
 
-def build_search_query(company_name, aliases=None, ticker=None):
-    custom_queries = {
-        "Vivo": "Telefônica Brasil VIVT3",
-        "Stone": "StoneCo STNE",
-        "Vale": "Vale SA VALE3",
-        "Oi": "Oi SA OIBR3 telecom brasil",
-        "Banco Inter": "Banco Inter INBR32",
-        "PagBank": "PagBank PagSeguro PAGS",
-        "Nubank": "Nubank NU Holdings",
-    }
 
-    if company_name in custom_queries:
-        return custom_queries[company_name]
-
-    parts = [company_name]
-
-    if ticker and str(ticker).strip():
-        parts.append(str(ticker).replace(".SA", ""))
-
-    if aliases:
-        first_alias = str(aliases).split("|")[0].strip()
-        if first_alias:
-            parts.append(first_alias)
-
-    return " ".join(parts)
-    
 def get_query_name(company_name, aliases="", ticker=""):
     custom = {
-        "Vivo": '"Telefônica Brasil" OR VIVT3 OR "Vivo telecom"',
+        "Vivo": '"Telefônica Brasil" OR "Telefonica Brasil" OR VIVT3 OR "Vivo telecom"',
         "Stone": '"StoneCo" OR STNE OR "Stone payments"',
-        "Vale": '"Vale SA" OR VALE3 OR "Vale mining"',
-        "Oi": '"Oi SA" OR OIBR3 OR "Oi telecom"',
+        "Vale": '"Vale SA" OR "Vale S.A." OR VALE3 OR "Vale mining"',
+        "Oi": '"Oi SA" OR "Oi S.A." OR OIBR3 OR "Oi telecom"',
         "Banco Inter": '"Banco Inter" OR INBR32',
         "PagBank": '"PagBank" OR PagSeguro OR PAGS',
-        "Nubank": '"Nubank" OR "Nu Holdings" OR NU',
+        "Nubank": '"Nubank" OR "Nu Holdings" OR "Nubank Brasil" OR "NYSE: NU"',
         "XP Inc": '"XP Inc" OR "XP Investimentos" OR "NASDAQ: XP" OR "XP stock"'
     }
 
@@ -114,7 +101,146 @@ def get_query_name(company_name, aliases="", ticker=""):
         return " OR ".join(alias_list[:4])
 
     return f'"{company_name}"'
-    
+
+
+def is_relevant_to_company(company_name, text, company_aliases=None):
+    text_lower = str(text).lower()
+    company_lower = str(company_name).lower()
+
+    irrelevant_terms_by_company = {
+        "XP Inc": [
+            "windows xp",
+            "microsoft xp",
+            "windows operating system",
+            "windows nostalgia"
+        ],
+        "Nubank": [
+            "nu.edu",
+            "national university",
+            "northwestern university",
+            "alani nu",
+            "nu medicine",
+            "nu-world",
+            "nu e power"
+        ],
+        "Stone": [
+            "kidney stone",
+            "urinary stone",
+            "renal stone",
+            "gallstone"
+        ],
+        "Vivo": [
+            "in vivo",
+            "ex vivo",
+            "vivo x",
+            "vivo phone",
+            "vivo smartphone"
+        ],
+        "Vale": [
+            "port vale",
+            "mclaren vale",
+            "vale winery"
+        ]
+    }
+
+    if company_name in irrelevant_terms_by_company:
+        if any(term in text_lower for term in irrelevant_terms_by_company[company_name]):
+            return False
+
+    aliases = []
+
+    if company_aliases and not pd.isna(company_aliases):
+        aliases = [
+            alias.strip().lower()
+            for alias in str(company_aliases).split("|")
+            if alias.strip()
+        ]
+
+    search_terms = [company_lower] + aliases
+
+    if any(term in text_lower for term in search_terms):
+        return True
+
+    fallback_terms = {
+        "Nubank": ["nu holdings", "nubank brasil", "nyse: nu"],
+        "XP Inc": ["xp investimentos", "xp inc", "nasdaq: xp"],
+        "Stone": ["stoneco", "stne"],
+        "Vivo": ["telefônica brasil", "telefonica brasil", "vivt3"],
+        "Vale": ["vale sa", "vale s.a.", "vale3"],
+        "Oi": ["oi sa", "oi s.a.", "oibr3"],
+        "BRB Banco de Brasília": ["brb", "banco de brasília", "banco de brasilia"]
+    }
+
+    for term in fallback_terms.get(company_name, []):
+        if term in text_lower:
+            return True
+
+    return False
+
+
+def apply_sector_specific_rules(company_name, text, category, signal_type, confidence):
+    text_lower = str(text).lower()
+    company_lower = str(company_name).lower()
+
+    critical_terms = [
+        "liquidação extrajudicial",
+        "banco central",
+        "fgc",
+        "intervenção",
+        "liquidation",
+        "central bank",
+        "bankruptcy",
+        "insolvency",
+        "fraud",
+        "investigation"
+    ]
+
+    yellow_terms = [
+        "brb",
+        "banco de brasília",
+        "assets linked",
+        "linked to banco master",
+        "venda de ativos",
+        "carteira",
+        "capital increase",
+        "aumento de capital",
+        "regulatory approval",
+        "risco regulatório"
+    ]
+
+    nubank_terms = [
+        "liquidação extrajudicial",
+        "liquidation",
+        "banco central",
+        "central bank",
+        "fgc",
+        "erro operacional",
+        "operational error",
+        "mensagem indevida",
+        "false message",
+        "wrong notification",
+        "mistaken notification",
+        "notification",
+        "push notification",
+        "email",
+        "e-mail"
+    ]
+
+    if "banco master" in company_lower:
+        if any(term in text_lower for term in critical_terms):
+            return "FINANCIAL_SYSTEM_RISK", "CRITICAL_SIGNAL", max(confidence, 0.9)
+
+    if "brb" in company_lower or "banco de brasília" in company_lower:
+        if any(term in text_lower for term in yellow_terms + critical_terms):
+            return "FINANCIAL_SYSTEM_RISK", "RISK_SIGNAL", max(confidence, 0.65)
+
+    if "nubank" in company_lower:
+        if any(term in text_lower for term in nubank_terms):
+            return "FINANCIAL_SYSTEM_RISK", "RISK_SIGNAL", max(confidence, 0.75)
+
+    return category, signal_type, confidence
+
+
 def load_ai_cache():
     if AI_CACHE_PATH.exists():
         try:
@@ -143,9 +269,7 @@ def get_ai_enrichment(company, title, source_url, signal_type):
 
     cached = cache.get(cache_key)
 
-    if cached and (
-        cached.get("ai_summary") or cached.get("ai_explanation")
-    ):
+    if cached and (cached.get("ai_summary") or cached.get("ai_explanation")):
         return cached
 
     if signal_type not in ["RISK_SIGNAL", "CRITICAL_SIGNAL"]:
@@ -170,10 +294,10 @@ def get_ai_enrichment(company, title, source_url, signal_type):
     save_ai_cache(cache)
 
     return ai_result
-    
+
 
 def classify_news(text: str):
-    text_lower = text.lower()
+    text_lower = str(text).lower()
 
     matched = []
     category_scores = {}
@@ -193,14 +317,11 @@ def classify_news(text: str):
             "signal_type": "GENERAL_NEWS"
         }
 
-    # categoria com mais matches
     best_category = max(category_scores, key=category_scores.get)
     total_matches = sum(category_scores.values())
 
-    # confiança simples
     confidence = min(0.3 + (total_matches * 0.2), 1.0)
 
-    # tipo de sinal
     if total_matches >= 3:
         signal_type = "CRITICAL_SIGNAL"
     elif total_matches == 2:
@@ -218,15 +339,30 @@ def classify_news(text: str):
 
 def collect_google_news(company_name, max_items=10, company_aliases=None, ticker=None):
     query_name = get_query_name(company_name, company_aliases, ticker)
-    
+
     query = quote_plus(
         f'({query_name}) '
-        f'(risco OR liquidez OR "Banco Central" OR FGC OR liquidação OR intervenção '
-        f'OR investigação OR dívida OR credores OR "aumento de capital" '
-        f'OR risk OR liquidity OR "central bank" OR liquidation OR creditors '
+        f'(risco OR liquidez OR "Banco Central" OR FGC '
+        f'OR liquidação OR intervenção '
+        f'OR investigação OR dívida OR credores '
+        f'OR "aumento de capital" '
+        f'OR "erro operacional" '
+        f'OR "mensagem indevida" '
+        f'OR notificação '
+        f'OR email '
+        f'OR e-mail '
+        f'OR "liquidação extrajudicial" '
+        f'OR notification '
+        f'OR "push notification" '
+        f'OR "false message" '
+        f'OR "wrong notification" '
+        f'OR "mistaken notification" '
+        f'OR risk OR liquidity OR "central bank" '
+        f'OR liquidation OR creditors '
         f'OR earnings OR results OR shares OR stock OR dividend) '
         f'when:90d'
     )
+
     url = f"https://news.google.com/rss/search?q={query}&hl=en-US&gl=US&ceid=US:en"
 
     feed = feedparser.parse(url)
@@ -236,78 +372,36 @@ def collect_google_news(company_name, max_items=10, company_aliases=None, ticker
     for entry in feed.entries[:max_items]:
         title = entry.get("title", "")
         news_summary = entry.get("summary", "")
+        source_url = entry.get("link", "")
         text = f"{title} {news_summary}"
-        
-        # FILTRO DE RELEVÂNCIA
+
         if not is_relevant_to_company(company_name, text, company_aliases):
             continue
-    
+
         published = None
-    
-        # prioridade 1 → published_parsed (melhor)
+
         if hasattr(entry, "published_parsed") and entry.published_parsed:
             try:
                 published = datetime(*entry.published_parsed[:6])
-            except:
+            except Exception:
                 published = None
-    
-        # prioridade 2 → published string
+
         elif entry.get("published"):
             try:
                 published = pd.to_datetime(entry.get("published"), errors="coerce")
-            except:
+            except Exception:
                 published = None
-    
+
         event_date = published
         collected_at = datetime.now()
-    
+
         classification = classify_news(text)
-        
-        def apply_sector_specific_rules(company_name, text, category, signal_type, confidence):
-            text_lower = text.lower()
-            company_lower = company_name.lower()
-        
-            critical_terms = [
-                "liquidação extrajudicial",
-                "banco central",
-                "fgc",
-                "intervenção",
-                "liquidation",
-                "central bank",
-                "bankruptcy",
-                "insolvency",
-                "fraud",
-                "investigation"
-            ]
-        
-            yellow_terms = [
-                "brb",
-                "banco de brasília",
-                "assets linked",
-                "linked to banco master",
-                "venda de ativos",
-                "carteira",
-                "capital increase",
-                "aumento de capital",
-                "regulatory approval",
-                "risco regulatório"
-            ]
-        
-            if "banco master" in company_lower:
-                if any(term in text_lower for term in critical_terms):
-                    return "FINANCIAL_SYSTEM_RISK", "CRITICAL_SIGNAL", max(confidence, 0.9)
-        
-            if "brb" in company_lower or "banco de brasília" in company_lower:
-                if any(term in text_lower for term in yellow_terms + critical_terms):
-                    return "FINANCIAL_SYSTEM_RISK", "RISK_SIGNAL", max(confidence, 0.65)
-        
-            return category, signal_type, confidence
-    
+
         category = classification["risk_category"]
         confidence = classification["confidence_score"]
         keywords = classification["matched_keywords"]
         signal_type = classification["signal_type"]
-        
+
         category, signal_type, confidence = apply_sector_specific_rules(
             company_name=company_name,
             text=text,
@@ -315,16 +409,15 @@ def collect_google_news(company_name, max_items=10, company_aliases=None, ticker
             signal_type=signal_type,
             confidence=confidence
         )
-        
+
         ml_signal_type, ml_confidence = predict_signal_type(
             description=title,
             matched_keywords=", ".join(keywords),
         )
-        
+
         rule_signal_type = signal_type
-        
         final_signal_type = signal_type
-        
+
         if ml_signal_type:
             if ml_signal_type == signal_type:
                 confidence = min(confidence + 0.1, 1.0)
@@ -332,23 +425,21 @@ def collect_google_news(company_name, max_items=10, company_aliases=None, ticker
             elif ml_confidence and ml_confidence >= 0.75:
                 final_signal_type = ml_signal_type
                 confidence = max(confidence, ml_confidence)
-      
-        try:
-            source_url = entry.get("link", "")
 
+        try:
             ai_result = get_ai_enrichment(
                 company=company_name,
                 title=title,
                 source_url=source_url,
                 signal_type=signal_type
             )
-            
+
             ai_summary = ai_result["ai_summary"]
             ai_explanation = ai_result["ai_explanation"]
         except Exception:
             ai_summary = ""
             ai_explanation = ""
-    
+
         records.append({
             "company": company_name,
             "event_date": event_date,
@@ -356,9 +447,9 @@ def collect_google_news(company_name, max_items=10, company_aliases=None, ticker
             "event_type": "news_signal",
             "risk_category": category,
             "severity": (
-                5 if final_signal_type  == "CRITICAL_SIGNAL"
-                else 4 if final_signal_type  == "RISK_SIGNAL"
-                else 2 if final_signal_type  == "WEAK_SIGNAL"
+                5 if final_signal_type == "CRITICAL_SIGNAL"
+                else 4 if final_signal_type == "RISK_SIGNAL"
+                else 2 if final_signal_type == "WEAK_SIGNAL"
                 else 1
             ),
             "confidence_score": confidence,
@@ -377,6 +468,7 @@ def collect_google_news(company_name, max_items=10, company_aliases=None, ticker
 
     return pd.DataFrame(records)
 
+
 def collect_all_news(companies=None):
     companies_df = pd.read_csv("data/mock/companies.csv")
 
@@ -393,7 +485,7 @@ def collect_all_news(companies=None):
         company = row["company"]
         aliases = row.get("aliases", "")
         ticker = row.get("ticker", "")
-    
+
         news_df = collect_google_news(
             company_name=company,
             max_items=15,
@@ -434,40 +526,8 @@ def collect_all_news(companies=None):
     new_df.to_csv(daily_path, index=False, encoding="utf-8-sig")
 
     return final_df
-    
-def is_relevant_to_company(company_name, text, company_aliases=None):
-    text_lower = text.lower()
-    company_lower = company_name.lower()
-    
-    irrelevant_terms_by_company = {
-        "XP Inc": [
-            "windows xp",
-            "microsoft xp",
-            "windows operating system",
-            "windows nostalgia"
-        ]
-    }
-    
-    if company_name in irrelevant_terms_by_company:
-        if any(term in text_lower for term in irrelevant_terms_by_company[company_name]):
-            return False
 
-    aliases = []
 
-    if company_aliases:
-        aliases = [
-            alias.strip().lower()
-            for alias in str(company_aliases).split("|")
-            if alias.strip()
-        ]
-
-    search_terms = [company_lower] + aliases
-
-    if any(term in text_lower for term in search_terms):
-        return True
-
-    return False
-    
 if __name__ == "__main__":
     result_df = collect_all_news()
     print(f"News collection completed. {len(result_df)} records available in history.")
