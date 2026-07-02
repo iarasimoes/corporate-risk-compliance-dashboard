@@ -19,8 +19,8 @@ def ask_ollama(prompt):
         return response.json().get("response", "")
 
     except Exception as e:
-        return f"Error: {str(e)}"
-
+        print(f"Ollama error: {e}")
+        return ""
 
 def summarize_news(title):
     prompt = f"""

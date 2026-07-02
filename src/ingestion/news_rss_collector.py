@@ -269,31 +269,45 @@ def get_ai_enrichment(company, title, source_url, signal_type):
 
     cached = cache.get(cache_key)
 
-    if cached and (cached.get("ai_summary") or cached.get("ai_explanation")):
+    if cached and (
+        cached.get("ai_summary") or cached.get("ai_explanation")
+    ):
         return cached
 
+    empty_result = {
+        "ai_summary": "",
+        "ai_explanation": ""
+    }
+
     if signal_type not in ["RISK_SIGNAL", "CRITICAL_SIGNAL"]:
+        return empty_result
+
+    try:
+        ai_summary = summarize_news(title)
+        ai_explanation = explain_risk(title)
+
         ai_result = {
-            "ai_summary": "",
-            "ai_explanation": ""
+            "ai_summary": ai_summary or "",
+            "ai_explanation": ai_explanation or ""
         }
-    else:
-        try:
-            ai_result = {
-                "ai_summary": summarize_news(title),
-                "ai_explanation": explain_risk(title)
-            }
-        except Exception as e:
-            print(f"Ollama error for {company}: {e}")
-            ai_result = {
-                "ai_summary": "",
-                "ai_explanation": ""
-            }
 
-    cache[cache_key] = ai_result
-    save_ai_cache(cache)
+        # não salva erro nem resposta vazia no cache
+        if (
+            ai_result["ai_summary"].startswith("Error:")
+            or ai_result["ai_explanation"].startswith("Error:")
+            or not ai_result["ai_summary"]
+            or not ai_result["ai_explanation"]
+        ):
+            return empty_result
 
-    return ai_result
+        cache[cache_key] = ai_result
+        save_ai_cache(cache)
+
+        return ai_result
+
+    except Exception as e:
+        print(f"Ollama error for {company}: {e}")
+        return empty_result
 
 
 def classify_news(text: str):

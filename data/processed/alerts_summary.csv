@@ -1,0 +1,33 @@
+﻿company,severity,message,generated_at
+Alpha Retail,High,Multiple high-severity events detected.,2026-07-02 17:20:21.887846
+Alpha Retail,Attention,Several risk events detected in the monitoring window.,2026-07-02 17:20:21.887846
+Vertex Energy,Attention,Several risk events detected in the monitoring window.,2026-07-02 17:20:21.887846
+Nova Environmental,Attention,Several risk events detected in the monitoring window.,2026-07-02 17:20:21.887846
+Vale,Attention,Early warning indicators are present.,2026-07-02 17:20:21.887846
+Vale,Attention,Several risk events detected in the monitoring window.,2026-07-02 17:20:21.887846
+PagBank,Attention,Several risk events detected in the monitoring window.,2026-07-02 17:20:21.887846
+Americanas SA,Attention,Several risk events detected in the monitoring window.,2026-07-02 17:20:21.887846
+Ambipar,Attention,Early warning indicators are present.,2026-07-02 17:20:21.887846
+Ambipar,Attention,Several risk events detected in the monitoring window.,2026-07-02 17:20:21.887846
+Nubank,Critical,High accumulated risk score detected.,2026-07-02 17:20:21.887846
+Nubank,Attention,Several risk events detected in the monitoring window.,2026-07-02 17:20:21.887846
+Braskem,Critical,High accumulated risk score detected.,2026-07-02 17:20:21.887846
+Braskem,High,Multiple high-severity events detected.,2026-07-02 17:20:21.887846
+Braskem,Attention,Several risk events detected in the monitoring window.,2026-07-02 17:20:21.887846
+Vivo,Attention,Early warning indicators are present.,2026-07-02 17:20:21.887846
+Vivo,Attention,Several risk events detected in the monitoring window.,2026-07-02 17:20:21.887846
+Banco Master,Critical,High accumulated risk score detected.,2026-07-02 17:20:21.887846
+Banco Master,High,Multiple high-severity events detected.,2026-07-02 17:20:21.887846
+Banco Master,Attention,Several risk events detected in the monitoring window.,2026-07-02 17:20:21.887846
+Banco Inter,Attention,Several risk events detected in the monitoring window.,2026-07-02 17:20:21.887846
+BRB Banco de Brasília,Critical,High accumulated risk score detected.,2026-07-02 17:20:21.887846
+BRB Banco de Brasília,Attention,Several risk events detected in the monitoring window.,2026-07-02 17:20:21.887846
+Stone,Attention,Early warning indicators are present.,2026-07-02 17:20:21.887846
+Stone,Attention,Several risk events detected in the monitoring window.,2026-07-02 17:20:21.887846
+Eletrobras,Attention,Several risk events detected in the monitoring window.,2026-07-02 17:20:21.887846
+Oi,Attention,Several risk events detected in the monitoring window.,2026-07-02 17:20:21.887846
+Petrobras,Attention,Early warning indicators are present.,2026-07-02 17:20:21.887846
+Petrobras,Attention,Several risk events detected in the monitoring window.,2026-07-02 17:20:21.887846
+TIM Brasil,Attention,Several risk events detected in the monitoring window.,2026-07-02 17:20:21.887846
+Raia Drogasil,Attention,Several risk events detected in the monitoring window.,2026-07-02 17:20:21.887846
+XP Inc,Attention,Several risk events detected in the monitoring window.,2026-07-02 17:20:21.887846

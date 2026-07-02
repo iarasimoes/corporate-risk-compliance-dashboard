@@ -1,0 +1,24 @@
+﻿company,sector,risk_score,status,total_events,critical_signals,risk_signals,last_event_date,top_risk_category
+BRB Banco de Brasília,Banking,100.0,Critical,60,0,60,2026-07-02 16:16:53.446681,FINANCIAL_SYSTEM_RISK
+Braskem,Chemicals,100.0,Critical,66,2,8,2026-07-02 16:16:53.446681,CREDIT_LIQUIDITY
+Nubank,Fintech,100.0,Critical,77,0,8,2026-07-02 16:16:53.446681,FINANCIAL_SYSTEM_RISK
+Banco Master,Banking,100.0,Critical,45,19,3,2026-07-02 16:16:53.446681,FINANCIAL_SYSTEM_RISK
+Ambipar,Environmental Services,53.7,Attention,29,1,5,2026-07-02 16:16:53.446681,CREDIT_LIQUIDITY
+Vale,Mining,45.66,Attention,71,0,2,2026-06-13 03:30:26.125265,GENERAL
+Petrobras,Energy,40.17,Attention,30,0,3,2026-07-02 16:16:53.446681,GENERAL
+Stone,Payments,33.21,Attention,63,0,0,2026-07-02 16:16:53.446681,GENERAL
+Vivo,Telecom,31.59,Attention,67,0,0,2026-06-13 03:30:26.125265,GENERAL
+Americanas SA,Retail,28.85,Normal,18,1,1,2026-06-13 03:30:26.125265,FINANCIAL_SYSTEM_RISK
+PagBank,Payments,25.59,Normal,62,0,0,2026-07-02 16:16:53.446681,GENERAL
+Oi,Telecom,25.14,Normal,12,0,2,2026-06-12 03:30:29.029912,CREDIT_LIQUIDITY
+XP Inc,Financial Services,21.63,Normal,26,0,0,2026-07-02 16:16:53.446681,GENERAL
+Eletrobras,Utilities,20.7,Normal,35,0,0,2026-07-02 16:16:53.446681,GENERAL
+Banco Inter,Fintech,18.54,Normal,21,0,1,2026-06-12 03:30:29.029912,GENERAL
+Raia Drogasil,Healthcare,5.49,Normal,6,0,0,2026-06-12 03:30:29.029912,FINANCIAL_SYSTEM_RISK
+Alpha Retail,Unknown,5.04,Normal,3,0,0,2025-02-05 00:00:00.000000,ACCOUNTING
+TIM Brasil,Telecom,4.2,Normal,9,0,0,2026-06-12 03:30:29.029912,GENERAL
+Vertex Energy,Unknown,4.2,Normal,3,0,0,2025-02-10 00:00:00.000000,CREDIT_LIQUIDITY
+Nova Environmental,Unknown,3.81,Normal,3,0,0,2025-02-03 00:00:00.000000,LEGAL_REGULATORY
+Totvs,Technology,2.1,Normal,2,0,0,2026-06-12 03:30:29.029912,GOVERNANCE
+Hypera,Pharmaceuticals,1.95,Normal,1,0,0,2026-07-02 16:16:53.446681,FINANCIAL_SYSTEM_RISK
+Locaweb,Technology,0.3,Normal,1,0,0,2026-06-13 03:30:26.125265,GENERAL
